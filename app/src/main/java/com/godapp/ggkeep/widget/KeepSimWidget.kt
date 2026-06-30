@@ -2,6 +2,7 @@ package com.godapp.ggkeep.widget
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -227,6 +228,15 @@ class KeepSimWidget : GlanceAppWidget() {
 
         val launchIntent = Intent(context.applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            // Glance 1.1.0 已知问题: actionStartActivity(intent, parameters) 直接传 Intent 的重载
+            // 不会为每个 item 创建独立的 PendingIntent —— Intent.filterEquals 只比较
+            // action/data/type/component/categories, 不比较 extras. 多个 widget item 的 Intent
+            // 在这些维度上完全相同, 会共用同一个 PendingIntent, 导致 extras 被覆盖为其它 item 的值,
+            // 点击任意 item 都会用错误的 task_id 启动 MainActivity, 数据库查不到对应任务 → "任务不存在".
+            // 这里给每个 Intent 设置唯一的 data URI, 让 PendingIntent 能正确区分;
+            // MainActivity 仍按原逻辑读取 task_id extra, 不需要处理 data 字段.
+            // 参考: https://issuetracker.google.com/issues/238793260
+            data = Uri.parse("ggkeep://task/${task.id}")
         }
 
         Row(
