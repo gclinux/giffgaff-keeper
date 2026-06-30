@@ -39,6 +39,9 @@
 
 ## 📦 安装
 
+### 下载apk安装
+从 https://github.com/gclinux/giffgaff-keeper/releases/ 中下载apk安装
+
 ### 从源码编译
 
 1. 克隆仓库
