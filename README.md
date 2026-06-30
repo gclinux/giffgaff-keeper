@@ -2,6 +2,11 @@
 
 一个用于管理 giffgaff 等 SIM 卡保号任务的 Android 应用，帮助你追踪 180 天消费规则，避免号码因长期无活动被回收。
 
+## 预览:
+<img width="406" height="798" alt="ScreenShot_2026-06-30_085541_245" src="https://github.com/user-attachments/assets/91732039-5151-48d4-9bc4-a9b0f8fc4110" />
+<img width="512" height="798" alt="微信图片_20260630084656_18_353" src="https://github.com/user-attachments/assets/29b364a2-b3af-45ac-9334-acd1466dde04" />
+
+
 ## ✨ 功能特性
 
 - **任务管理**：添加/编辑/删除保号任务，记录手机号、最后消费时间、提醒时间等
@@ -34,11 +39,14 @@
 
 ## 📦 安装
 
+### 下载apk安装
+从 https://github.com/gclinux/giffgaff-keeper/releases/ 中下载apk安装
+
 ### 从源码编译
 
 1. 克隆仓库
    ```bash
-   git clone https://github.com/<your-username>/ggkeep.git
+   git clone https://github.com/gclinux/giffgaff-keeper.git ggkeep
    cd ggkeep
    ```
 
@@ -72,6 +80,12 @@ gradlew.bat assembleDebug
 - Android 13+ 需授予通知权限
 - USSD 代码中的 `#` 会被自动编码，无需手动处理
 - 所有指令（拨号/短信/网页）均会先弹确认对话框，并调起系统应用由你最终确认
+
+## 桌面小部件添加过程
+
+- 小米手机桌面小部件添加过程: 双指在桌面收缩触发桌面菜单->点击`小部件`->点击`全部应用`->点击最下方 `安卓小部件`->找到`gifgaff助手` 进行添加
+- 华为/荣耀手机桌面小部件添加过程: 双指收缩触发桌面菜单-> 点击`卡片服务`->拉到最下方点击`窗口小工具` ->找到`gifgaff助手` 进行添加
+- vivo 桌面小部件 添加过程: 双指收缩触发桌面菜单 -> 点击`组件` ->搜索 "giff" -> 选择`giffgaff助手` 进行添加
 
 ## 📄 许可证
 
