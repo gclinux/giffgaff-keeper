@@ -3,6 +3,7 @@ package com.godapp.ggkeep.ui.screens.taskdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.godapp.ggkeep.data.repository.KeepTaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,18 +21,25 @@ class TaskDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "KeepSim"
+    }
+
     private val taskId: Long = savedStateHandle.get<Long>("taskId") ?: -1L
 
     private val _uiState = MutableStateFlow(TaskDetailUiState())
     val uiState: StateFlow<TaskDetailUiState> = _uiState.asStateFlow()
 
     init {
+        Log.d(TAG, "init: taskId from savedStateHandle = $taskId")
         loadTask()
     }
 
     private fun loadTask() {
         viewModelScope.launch {
+            Log.d(TAG, "loadTask: querying repository.getTaskById($taskId)")
             val task = repository.getTaskById(taskId)
+            Log.d(TAG, "loadTask: result = ${task?.let { "id=${it.id}, name=${it.name}" } ?: "null"}")
             _uiState.update {
                 it.copy(task = task, isLoading = false)
             }

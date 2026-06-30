@@ -1,6 +1,7 @@
 package com.godapp.ggkeep.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,9 +31,10 @@ fun KeepSimNavigation(
 ) {
     val navController = rememberNavController()
 
+    // 始终以列表页为起始目的地，确保回退栈中有 tasklist
     NavHost(
         navController = navController,
-        startDestination = if (initialTaskId > 0) Routes.taskDetail(initialTaskId) else Routes.TASK_LIST
+        startDestination = Routes.TASK_LIST
     ) {
         composable(Routes.TASK_LIST) {
             TaskListScreen(
@@ -78,6 +80,14 @@ fun KeepSimNavigation(
             CommandsScreen(
                 onBack = { navController.popBackStack() }
             )
+        }
+    }
+
+    // 如果是从 widget/通知启动，在列表页就绪后导航到详情页
+    // 这样回退栈就是 tasklist → taskdetail/{taskId}，按返回键可回到列表
+    LaunchedEffect(initialTaskId) {
+        if (initialTaskId > 0) {
+            navController.navigate(Routes.taskDetail(initialTaskId))
         }
     }
 }

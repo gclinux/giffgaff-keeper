@@ -3,8 +3,8 @@
 一个用于管理 giffgaff 等 SIM 卡保号任务的 Android 应用，帮助你追踪 180 天消费规则，避免号码因长期无活动被回收。
 
 ## 预览:
-<img width="406" height="798" alt="ScreenShot_2026-06-30_085541_245" src="https://github.com/user-attachments/assets/91732039-5151-48d4-9bc4-a9b0f8fc4110" />
-<img width="512" height="798" alt="微信图片_20260630084656_18_353" src="https://github.com/user-attachments/assets/29b364a2-b3af-45ac-9334-acd1466dde04" />
+<img width="400" height="798" alt="ScreenShot_2026-06-30_085541_245" src="https://github.com/user-attachments/assets/91732039-5151-48d4-9bc4-a9b0f8fc4110" />
+<img width="366" height="798" alt="微信图片_20260630084656_18_353" src="https://github.com/user-attachments/assets/29b364a2-b3af-45ac-9334-acd1466dde04" />
 
 
 ## ✨ 功能特性

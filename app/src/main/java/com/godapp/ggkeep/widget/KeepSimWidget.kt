@@ -2,7 +2,6 @@ package com.godapp.ggkeep.widget
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -15,7 +14,6 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
-import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
@@ -94,6 +92,37 @@ class WidgetNextPageAction : ActionCallback {
     }
 }
 
+/**
+ * widget 点击任务条目时触发：从 parameters 取 task_id，自己 startActivity 调起 MainActivity。
+ *
+ * 为什么不用 actionStartActivity(intent, parameters)？
+ * Glance 1.1.0 的该重载存在 PendingIntent 复用问题——多个 widget item 的 Intent 在
+ * filterEquals 维度相同（同 component、同 flags），只有 extras 不同，而 PendingIntent 匹配
+ * 不比较 extras，导致点击任意 item 都复用同一个 PendingIntent，extras 被覆盖为其它 item 的值，
+ * MainActivity 收到错误的 task_id → 数据库查不到 → "任务不存在"。
+ * 即便给 Intent 设置唯一 data URI，在部分设备/Glance 实现下仍不可靠。
+ *
+ * actionRunCallback 由 Glance 内部为每个 clickable 生成独立的 PendingIntent（这是 Glance 的
+ * 核心机制，可靠性远高于 actionStartActivity(intent, parameters)），在 callback 里我们完全
+ * 掌控 startActivity 的 extras，传参 100% 可靠。
+ */
+class TaskClickAction : ActionCallback {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        val taskId = parameters[TASK_ID_KEY] ?: run {
+            android.util.Log.e("KeepSim", "TaskClickAction: task_id missing in parameters")
+            return
+        }
+        val triggerSms = parameters[TRIGGER_SMS_KEY] ?: false
+        android.util.Log.d("KeepSim", "TaskClickAction.onAction: taskId=$taskId, triggerSms=$triggerSms")
+        val intent = Intent(context.applicationContext, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(MainActivity.EXTRA_TASK_ID, taskId)
+            putExtra(MainActivity.EXTRA_TRIGGER_SMS, triggerSms)
+        }
+        context.startActivity(intent)
+    }
+}
+
 class KeepSimWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -153,7 +182,7 @@ class KeepSimWidget : GlanceAppWidget() {
                                         )
                                         Spacer(modifier = GlanceModifier.height(3.dp))
                                     }
-                                    TaskWidgetItem(task, context)
+                                    TaskWidgetItem(task)
                                 }
                             }
                         }
@@ -216,7 +245,7 @@ class KeepSimWidget : GlanceAppWidget() {
     }
 
     @androidx.compose.runtime.Composable
-    private fun TaskWidgetItem(task: KeepTask, context: Context) {
+    private fun TaskWidgetItem(task: KeepTask) {
         val statusColor = when (task.colorLevel) {
             ColorLevel.EXPIRED  -> StatusExpired
             ColorLevel.CRITICAL -> StatusCritical
@@ -226,25 +255,11 @@ class KeepSimWidget : GlanceAppWidget() {
 
         val shouldTriggerSms = !task.smsToNumber.isNullOrBlank() && task.colorLevel != ColorLevel.NORMAL
 
-        val launchIntent = Intent(context.applicationContext, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            // Glance 1.1.0 已知问题: actionStartActivity(intent, parameters) 直接传 Intent 的重载
-            // 不会为每个 item 创建独立的 PendingIntent —— Intent.filterEquals 只比较
-            // action/data/type/component/categories, 不比较 extras. 多个 widget item 的 Intent
-            // 在这些维度上完全相同, 会共用同一个 PendingIntent, 导致 extras 被覆盖为其它 item 的值,
-            // 点击任意 item 都会用错误的 task_id 启动 MainActivity, 数据库查不到对应任务 → "任务不存在".
-            // 这里给每个 Intent 设置唯一的 data URI, 让 PendingIntent 能正确区分;
-            // MainActivity 仍按原逻辑读取 task_id extra, 不需要处理 data 字段.
-            // 参考: https://issuetracker.google.com/issues/238793260
-            data = Uri.parse("ggkeep://task/${task.id}")
-        }
-
         Row(
             modifier = GlanceModifier
                 .fillMaxWidth()
                 .clickable(
-                    actionStartActivity(
-                        intent = launchIntent,
+                    actionRunCallback<TaskClickAction>(
                         parameters = actionParametersOf(
                             TASK_ID_KEY to task.id,
                             TRIGGER_SMS_KEY to shouldTriggerSms

@@ -122,7 +122,17 @@ fun TaskDetailScreen(
                         .padding(padding),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("任务不存在")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "任务不存在",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = onBack) {
+                            Text("返回列表")
+                        }
+                    }
                 }
             }
             else -> {

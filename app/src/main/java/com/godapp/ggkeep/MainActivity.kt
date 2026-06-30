@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,6 +25,7 @@ class MainActivity : ComponentActivity() {
 
         val taskId = intent?.getLongExtra(EXTRA_TASK_ID, -1L) ?: -1L
         val triggerSms = intent?.getBooleanExtra(EXTRA_TRIGGER_SMS, false) ?: false
+        Log.d(TAG, "onCreate: taskId=$taskId, triggerSms=$triggerSms, action=${intent?.action}")
 
         setContent {
             KeepSimTheme {
@@ -37,6 +39,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        val taskId = intent.getLongExtra(EXTRA_TASK_ID, -1L)
+        Log.d(TAG, "onNewIntent: taskId=$taskId, action=${intent.action}")
         setIntent(intent)
         // Recreate to pick up new intent extras (task_id / trigger_sms).
         // Simple and correct; the brief recreation flash is acceptable for notification taps.
@@ -63,5 +67,6 @@ class MainActivity : ComponentActivity() {
         const val EXTRA_TASK_ID = "task_id"
         const val EXTRA_TRIGGER_SMS = "trigger_sms"
         private const val REQUEST_NOTIFICATION_PERMISSION = 1001
+        private const val TAG = "KeepSim"
     }
 }
